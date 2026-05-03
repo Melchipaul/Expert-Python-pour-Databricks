@@ -1,62 +1,68 @@
 import datetime
 import pytz
 
+
 class Account:
-    """ Simple account class with balance"""
- 
+    """ Simple account class with balance """
+
     @staticmethod
     def _current_time():
-        return datetime.datetime.now(datetime.UTC)
-    
+        utc_time = datetime.datetime.utcnow()
+        return pytz.utc.localize(utc_time)
+
     def __init__(self, name, balance):
-        self.__name = name
+        self._name = name
         self.__balance = balance
-        self.__transaction_list = [(Account._current_time(), balance)]
-        print("Account created for {} with balance of {}".format(self.__name, self.__balance))
-    
+        self._transaction_list = [(Account._current_time(), balance)]
+        print("Account created for " + self._name)
+        self.show_balance()
+
     def deposit(self, amount):
-        if amount <= 0:
-            print("Deposit amount must be positive")
-        else:
+        if amount > 0:
             self.__balance += amount
-            self.__transaction_list.append((Account._current_time(), amount))
-            print("Deposit accepted, balance is now {}".format(self.__balance))
-    
+            self.show_balance()
+            self._transaction_list.append((Account._current_time(), amount))
+
     def withdraw(self, amount):
-        if amount > self.__balance:
-            print("Insufficient funds")
-        else:
+        if 0 < amount <= self.__balance:
             self.__balance -= amount
-            self.__transaction_list.append((Account._current_time(), -amount))
-            print("Withdrawal accepted, balance is now {}".format(self.__balance))
+            self._transaction_list.append((Account._current_time(), -amount))
+        else:
+            print("The amount must be greater than zero and no more then your account balance")
+        self.show_balance()
 
     def show_balance(self):
-        print("Balance for {} is {}".format(self.__name, self.__balance))
+        print("Balance is {}".format(self.__balance))
 
     def show_transactions(self):
-        for date, amount in self.__transaction_list:
+        for date, amount in self._transaction_list:
             if amount > 0:
                 tran_type = "deposited"
-            else:                
-                tran_type = "withdrew"
+            else:
+                tran_type = "withdrawn"
                 amount *= -1
-            print("{:6} {} on {} local time was {}".format(amount, tran_type, date, date.astimezone()))
+            print("{:6} {} on {} (local time was {})".format(amount, tran_type, date, date.astimezone()))
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     tim = Account("Tim", 0)
+    tim.show_balance()
+
     tim.deposit(1000)
-    tim.show_balance()
+    # tim.show_balance()
     tim.withdraw(500)
-    tim.show_balance()
-    tim.withdraw(600)
+    # tim.show_balance()
+
+    tim.withdraw(2000)
+
     tim.show_transactions()
-    
+
     steph = Account("Steph", 800)
-    steph.deposit(200)
-    steph.show_balance()
-    steph.withdraw(100)
-    steph.show_balance()
-    steph.__balance = 10000
-    steph.show_balance()
+    steph.__balance = 200
+    steph.deposit(100)
+    steph.withdraw(200)
     steph.show_transactions()
+    steph.show_balance()
     print(steph.__dict__)
+    steph._Account__balance = 40
+    steph.show_balance()
